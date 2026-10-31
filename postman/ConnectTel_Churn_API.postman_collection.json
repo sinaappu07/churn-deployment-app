@@ -1,0 +1,185 @@
+{
+  "info": {
+    "name": "ConnectTel Churn API",
+    "description": "Set the base_url collection variable to http://localhost:8000 (local) or your Render API URL.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "health"
+          ]
+        },
+        "description": "Sanity check: returns 200 when the service is alive."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Model is loaded\", function () { pm.expect(pm.response.json().model_loaded).to.eql(true); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Predict: high-risk customer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "New fiber customer, month-to-month, electronic check, no add-ons.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Gender\": \"Female\",\n  \"Senior_Citizen\": \"No\",\n  \"Partner\": \"No\",\n  \"Dependents\": \"No\",\n  \"Tenure_Months\": 2,\n  \"Phone_Service\": \"Yes\",\n  \"Multiple_Lines\": \"No\",\n  \"Internet_Service\": \"Fiber optic\",\n  \"Online_Security\": \"No\",\n  \"Online_Backup\": \"No\",\n  \"Device_Protection\": \"No\",\n  \"Tech_Support\": \"No\",\n  \"Streaming_TV\": \"No\",\n  \"Streaming_Movies\": \"No\",\n  \"Contract\": \"Month-to-month\",\n  \"Paperless_Billing\": \"Yes\",\n  \"Payment_Method\": \"Electronic check\",\n  \"Monthly_Charges\": 85.0,\n  \"Total_Charges\": 170.0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Probability is between 0 and 1\", function () {",
+              "    const p = pm.response.json().churn_probability;",
+              "    pm.expect(p).to.be.within(0, 1);",
+              "});",
+              "pm.test(\"Risk level is High\", function () { pm.expect(pm.response.json().risk_level).to.eql(\"High\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Predict: low-risk customer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "Long-time DSL customer on a two-year contract with automatic payment.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Gender\": \"Male\",\n  \"Senior_Citizen\": \"No\",\n  \"Partner\": \"Yes\",\n  \"Dependents\": \"Yes\",\n  \"Tenure_Months\": 60,\n  \"Phone_Service\": \"Yes\",\n  \"Multiple_Lines\": \"Yes\",\n  \"Internet_Service\": \"DSL\",\n  \"Online_Security\": \"Yes\",\n  \"Online_Backup\": \"Yes\",\n  \"Device_Protection\": \"Yes\",\n  \"Tech_Support\": \"Yes\",\n  \"Streaming_TV\": \"No\",\n  \"Streaming_Movies\": \"No\",\n  \"Contract\": \"Two year\",\n  \"Paperless_Billing\": \"No\",\n  \"Payment_Method\": \"Credit card (automatic)\",\n  \"Monthly_Charges\": 65.0,\n  \"Total_Charges\": 3900.0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Probability is between 0 and 1\", function () {",
+              "    const p = pm.response.json().churn_probability;",
+              "    pm.expect(p).to.be.within(0, 1);",
+              "});",
+              "pm.test(\"Risk level is Low\", function () { pm.expect(pm.response.json().risk_level).to.eql(\"Low\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Predict: invalid input (text tenure)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/predict",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "predict"
+          ]
+        },
+        "description": "Tenure_Months is a string, so validation must reject it with HTTP 422.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"Gender\": \"Female\",\n  \"Senior_Citizen\": \"No\",\n  \"Partner\": \"No\",\n  \"Dependents\": \"No\",\n  \"Tenure_Months\": \"twelve\",\n  \"Phone_Service\": \"Yes\",\n  \"Multiple_Lines\": \"No\",\n  \"Internet_Service\": \"Fiber optic\",\n  \"Online_Security\": \"No\",\n  \"Online_Backup\": \"No\",\n  \"Device_Protection\": \"No\",\n  \"Tech_Support\": \"No\",\n  \"Streaming_TV\": \"No\",\n  \"Streaming_Movies\": \"No\",\n  \"Contract\": \"Month-to-month\",\n  \"Paperless_Billing\": \"Yes\",\n  \"Payment_Method\": \"Electronic check\",\n  \"Monthly_Charges\": 85.0,\n  \"Total_Charges\": 170.0\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 422 (invalid input rejected)\", function () { pm.response.to.have.status(422); });",
+              "pm.test(\"Error explains the problem\", function () { pm.expect(pm.response.json().detail.length).to.be.above(0); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
