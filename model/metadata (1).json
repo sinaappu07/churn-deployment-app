@@ -1,0 +1,48 @@
+{
+  "model_name": "XGBoost churn pipeline",
+  "decision_threshold": 0.5888,
+  "target_recall": 0.75,
+  "test_auc": 0.8548,
+  "test_recall": 0.7299,
+  "test_precision": 0.5617,
+  "xgboost_params": {
+    "n_estimators": 200,
+    "learning_rate": 0.05,
+    "max_depth": 2
+  },
+  "n_train": 5634,
+  "n_test": 1409,
+  "feature_columns": [
+    "Gender",
+    "Senior_Citizen",
+    "Partner",
+    "Dependents",
+    "Tenure_Months",
+    "Phone_Service",
+    "Multiple_Lines",
+    "Internet_Service",
+    "Online_Security",
+    "Online_Backup",
+    "Device_Protection",
+    "Tech_Support",
+    "Streaming_TV",
+    "Streaming_Movies",
+    "Contract",
+    "Paperless_Billing",
+    "Payment_Method",
+    "Monthly_Charges",
+    "Total_Charges",
+    "ServiceCount",
+    "TotalChargesPerTenure",
+    "TenureGroup",
+    "AutoPay"
+  ],
+  "library_versions": {
+    "python": "3.13.18",
+    "scikit-learn": "1.6.1",
+    "xgboost": "3.4.1",
+    "pandas": "2.2.3",
+    "numpy": "2.1.3"
+  },
+  "trained_at_utc": "2026-10-31 10:03:45"
+}
